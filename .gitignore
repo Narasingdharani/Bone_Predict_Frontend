@@ -1,0 +1,35 @@
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+ENV/
+
+# Local Configuration & Logs
+curr_ip.txt
+tmp_ip.txt
+ip_output.txt
+tmp/
+*.log
+
+# Databases & Large Data (Optional, but usually ignored for git)
+# patients.csv
+# users.csv
+# bone_predict_db.sql
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Android/Gradle Junk (if any)
+.gradle/
+build/
+local.properties
+capture/

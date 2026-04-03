@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Role | AlveoPredict</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div style="background: white; padding: 12px 0; display: flex; align-items: center; position: sticky; top: 0; z-index: 100;">
+            <a href="/signin" style="color: var(--text-primary); font-size: 20px; text-decoration: none; margin-right: 16px;">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <h2 style="font-size: 18px; margin: 0 auto; margin-right: 36px;">Select Role</h2>
+        </div>
+
+        <div style="margin-top: 40px; text-align: center;">
+            <h1 style="font-size: 28px; margin-bottom: 12px;">Who are you?</h1>
+            <p class="subtitle" style="padding: 0 24px;">We'll customize the experience based on your role.</p>
+        </div>
+
+        <div style="margin-top: 48px;">
+            <!-- Role Card: Doctor -->
+            <div class="surface role-card" onclick="selectRole('Doctor')" id="doctorRole">
+                <div class="role-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 16px; margin-bottom: 4px;">Doctor</h3>
+                    <p style="color: var(--text-secondary); font-size: 12px;">Clinical Practice</p>
+                </div>
+                <div class="radio-circle active" id="doctorRadio"></div>
+            </div>
+        </div>
+
+        <div style="flex: 1;"></div> <!-- Spacer -->
+
+        <div style="margin-bottom: 32px;">
+            <a href="/dashboard" class="btn-app btn-primary" style="background: #90C2F3; font-weight: 700;">
+                Continue to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let selectedRole = 'Doctor';
+
+        function selectRole(role) {
+            selectedRole = role;
+            // Support more roles here if needed in future
+            const radio = document.getElementById('doctorRadio');
+            if (role === 'Doctor') {
+                radio.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>
