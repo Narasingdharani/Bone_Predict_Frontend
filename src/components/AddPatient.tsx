@@ -18,7 +18,7 @@ const AddPatient: React.FC = () => {
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
   const patientId = searchParams.get('id')
-  
+
   const [currentStep, setCurrentStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [assessmentData, setAssessmentData] = useState<AssessmentData>({
@@ -29,7 +29,7 @@ const AddPatient: React.FC = () => {
     mlPrediction: {},
     periodontal: {}
   })
-  
+
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const steps = [
@@ -106,50 +106,78 @@ const AddPatient: React.FC = () => {
 
   const handleSubmit = async () => {
     setLoading(true)
-    
+
     try {
-      if (user && assessmentData.demographics.name) {
-        // Create patient via API
-        const patientResponse = await ApiService.addPatient({
-          name: assessmentData.demographics.name,
-          age: parseInt(assessmentData.demographics.age) || 0,
-          email: assessmentData.demographics.email || '',
-          phone: assessmentData.demographics.phone || '',
-          lastVisit: new Date().toISOString().split('T')[0],
-          risk: assessmentData.mlPrediction.selectedModel === 'advanced' ? 'High' : 'Medium',
-          status: 'Active',
-          doctorId: user.id
-        })
-
-        if (patientResponse.error) {
-          throw new Error(patientResponse.error)
-        }
-
-        // Submit assessment data to backend for ML prediction
-        const predictionResponse = await ApiService.submitPrediction({
-          age: parseInt(assessmentData.demographics.age) || 0,
-          smoking: assessmentData.riskFactors.smoking || 'never',
-          diabetes: assessmentData.riskFactors.diabetes || 'no',
-          medications: assessmentData.riskFactors.medications || '',
-          gumHealth: assessmentData.periodontal.gumHealth || 'healthy',
-          pocketDepth: parseFloat(assessmentData.periodontal.pocketDepth) || 0,
-          bleeding: assessmentData.periodontal.bleeding || 'none',
-          cbctScan: assessmentData.cbctScan.fileName || ''
-        })
-
-        if (predictionResponse.error) {
-          throw new Error(predictionResponse.error)
-        }
-
-        console.log('Complete assessment submitted:', patientResponse.data)
-        console.log('Prediction completed:', predictionResponse.data)
-        
-        // Navigate to results page
-        navigate('/assessment/summary')
+      if (!user) {
+        throw new Error('Please login first')
       }
+
+      if (!assessmentData.demographics.name) {
+        throw new Error('Please enter patient name')
+      }
+
+      console.log('Starting assessment submission...')
+
+      // Create patient via API
+      const patientResponse = await ApiService.addPatient({
+        name: assessmentData.demographics.name,
+        age: parseInt(assessmentData.demographics.age) || 0,
+        email: assessmentData.demographics.email || '',
+        phone: assessmentData.demographics.phone || '',
+        lastVisit: new Date().toISOString().split('T')[0],
+        risk: assessmentData.mlPrediction.selectedModel === 'advanced' ? 'High' : 'Medium',
+        status: 'Active',
+        doctorId: user.id
+      })
+
+      if (patientResponse.error) {
+        throw new Error(`Patient creation failed: ${patientResponse.error}`)
+      }
+
+      console.log('Patient created successfully:', patientResponse.data)
+
+      // Submit assessment data to backend for ML prediction
+      const predictionResponse = await ApiService.submitPrediction({
+        age: parseInt(assessmentData.demographics.age) || 0,
+        smoking: assessmentData.riskFactors.smoking || 'never',
+        diabetes: assessmentData.riskFactors.diabetes || 'no',
+        medications: assessmentData.riskFactors.medications || '',
+        gumHealth: assessmentData.periodontal.gumHealth || 'healthy',
+        pocketDepth: parseFloat(assessmentData.periodontal.pocketDepth) || 0,
+        bleeding: assessmentData.periodontal.bleeding || 'none',
+        cbctScan: assessmentData.cbctScan.fileName || ''
+      })
+
+      if (predictionResponse.error) {
+        throw new Error(`Prediction failed: ${predictionResponse.error}`)
+      }
+
+      console.log('Prediction completed:', predictionResponse.data)
+
+      // Store results for summary page
+      localStorage.setItem('assessmentResults', JSON.stringify({
+        patient: patientResponse.data,
+        prediction: predictionResponse.data,
+        assessmentData: assessmentData
+      }))
+
+      // Navigate to results page
+      navigate('/assessment/summary')
+
     } catch (error) {
       console.error('Assessment submission error:', error)
-      alert('Failed to submit assessment. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+
+      // Show more user-friendly error message
+      if (errorMessage.includes('fetch') || errorMessage.includes('network')) {
+        alert('Connection error: Unable to connect to the server. Please check your internet connection and try again.')
+      } else if (errorMessage.includes('404') || errorMessage.includes('Not Found')) {
+        alert('Server error: The requested service is not available. Please try again later.')
+      } else if (errorMessage.includes('500') || errorMessage.includes('Internal Server Error')) {
+        alert('Server error: The server encountered an error. Please try again later.')
+      } else {
+        alert(`Error: ${errorMessage}. Please try again.`)
+      }
     } finally {
       setLoading(false)
     }
@@ -195,7 +223,7 @@ const AddPatient: React.FC = () => {
                       onChange={(e) => setAssessmentData(prev => ({
                         ...prev,
                         demographics: { ...prev.demographics, age: e.target.value }
-                    }))}
+                      }))}
                       placeholder="Age"
                       style={{
                         width: '100%',
@@ -213,7 +241,7 @@ const AddPatient: React.FC = () => {
                       onChange={(e) => setAssessmentData(prev => ({
                         ...prev,
                         demographics: { ...prev.demographics, gender: e.target.value }
-                    }))}
+                      }))}
                       style={{
                         width: '100%',
                         padding: '12px 16px',
@@ -238,7 +266,7 @@ const AddPatient: React.FC = () => {
                       onChange={(e) => setAssessmentData(prev => ({
                         ...prev,
                         demographics: { ...prev.demographics, email: e.target.value }
-                    }))}
+                      }))}
                       placeholder="patient@email.com"
                       style={{
                         width: '100%',
@@ -257,7 +285,7 @@ const AddPatient: React.FC = () => {
                       onChange={(e) => setAssessmentData(prev => ({
                         ...prev,
                         demographics: { ...prev.demographics, phone: e.target.value }
-                    }))}
+                      }))}
                       placeholder="+1234567890"
                       style={{
                         width: '100%',
@@ -716,7 +744,7 @@ const AddPatient: React.FC = () => {
           <img src="https://cdn-icons-png.flaticon.com/512/2864/2864230.png" alt="Logo" style={{ width: '32px', height: '32px' }} />
           <span style={{ fontWeight: 700, fontSize: '18px' }}>AlveoPredict AI</span>
         </div>
-        
+
         <nav>
           <div
             onClick={() => navigate('/dashboard')}
@@ -734,7 +762,7 @@ const AddPatient: React.FC = () => {
             <i className="fas fa-grid-2"></i>
             <span>Dashboard</span>
           </div>
-          
+
           <div
             style={{
               display: 'flex',
@@ -752,7 +780,7 @@ const AddPatient: React.FC = () => {
             <i className="fas fa-users"></i>
             <span>Patients</span>
           </div>
-          
+
           <div
             onClick={() => navigate('/add-patient')}
             style={{
@@ -769,7 +797,7 @@ const AddPatient: React.FC = () => {
             <i className="fas fa-plus-circle"></i>
             <span>New Assessment</span>
           </div>
-          
+
           <div
             onClick={() => navigate('/login')}
             style={{
@@ -857,7 +885,7 @@ const AddPatient: React.FC = () => {
               <i className="fas fa-arrow-left"></i>
               Previous
             </button>
-            
+
             <div style={{ display: 'flex', gap: '12px' }}>
               {currentStep > 1 && (
                 <button
@@ -876,7 +904,7 @@ const AddPatient: React.FC = () => {
                   Save Draft
                 </button>
               )}
-              
+
               <button
                 onClick={handleNext}
                 style={{

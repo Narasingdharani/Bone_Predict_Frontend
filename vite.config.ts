@@ -15,11 +15,11 @@ export default defineConfig({
     open: false,
     proxy: {
       '/api': {
-        target: 'http://localhost:180.235.121.245:8030',
+        target: 'http://180.235.121.245:8030',
         changeOrigin: true,
       },
       '/media': {
-        target: 'http://localhost:180.235.121.245:8030',
+        target: 'http://180.235.121.245:8030',
         changeOrigin: true,
       },
     },

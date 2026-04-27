@@ -31,7 +31,7 @@ const ConnectionTest: React.FC = () => {
     // Test 2: Direct backend connection
     try {
       addResult('Testing direct backend connection...')
-      const response = await fetch('http://localhost:180.235.121.245:8030/api/test')
+      const response = await fetch('http://180.235.121.245:8030/api/test')
       if (response.ok) {
         addResult('✅ Direct backend connection successful')
       } else {
@@ -57,7 +57,7 @@ const ConnectionTest: React.FC = () => {
     // Test 4: Check if backend is running on port 180.235.121.245:8030
     try {
       addResult('Checking if backend is running on port 180.235.121.245:8030...')
-      const response = await fetch('http://localhost:180.235.121.245:8030/')
+      const response = await fetch('http://180.235.121.245:8030/')
       if (response.ok) {
         addResult('✅ Backend server is running on port 180.235.121.245:8030')
       } else {
